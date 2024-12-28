@@ -1,27 +1,7 @@
-// 存储食谱的数组
-const recipes = [
-    // Happy Recipes
-    {
-        name: 'Morning Sunshine Smoothie Bowl',
-        mood: 'happy',
-        time: 'breakfast',
-        ingredients: 'Mango, banana, orange juice, greek yogurt, granola, honey, chia seeds',
-        instructions: 'Blend fruits with yogurt until smooth, top with granola, drizzle with honey, and sprinkle chia seeds.'
-    },
-    // ... 所有其他食谱 ...
-];
+import { recipes } from '../../recipes';
 
-// API handler
 export default function handler(req, res) {
     const { mood, time } = req.query;
-    
-    // 从 URL 路径中获取参数
-    const pathParts = req.url.split('/');
-    const moodParam = pathParts[pathParts.length - 2];
-    const timeParam = pathParts[pathParts.length - 1];
-    
-    const mood = moodParam;
-    const time = timeParam;
     
     console.log(`Searching for recipe with mood: ${mood}, time: ${time}`);
 

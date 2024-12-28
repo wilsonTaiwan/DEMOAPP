@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log(`Fetching recipe for mood: ${mood}, time: ${time}`);
             
-            const response = await fetch(`/api/recipes?mood=${mood}&time=${time}`);
+            const response = await fetch(`/api/recipe/${mood}/${time}`);
             const data = await response.json();
             
             if (!response.ok) {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Recipes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mood Recipe Finder</h1>
+        <div class="form-container">
+            <div class="input-group">
+                <label for="mood">How are you feeling?</label>
+                <select id="mood" required>
+                    <option value="happy">Happy</option>
+                    <option value="melancholic">Melancholic</option>
+                    <option value="energetic">Energetic</option>
+                    <option value="anxious">Anxious</option>
+                    <option value="romantic">Romantic</option>
+                    <option value="contemplative">Contemplative</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="time">What time is it?</label>
+                <select id="time" required>
+                    <option value="breakfast">Breakfast (6am - 10am)</option>
+                    <option value="brunch">Brunch (10am - 12pm)</option>
+                    <option value="lunch">Lunch (12pm - 2pm)</option>
+                    <option value="afternoon">Afternoon Tea (2pm - 5pm)</option>
+                    <option value="dinner">Dinner (5pm - 9pm)</option>
+                    <option value="latenight">Late Night (9pm - 12am)</option>
+                    <option value="snack">Quick Snack (Anytime)</option>
+                    <option value="dessert">Dessert (After Meals)</option>
+                </select>
+            </div>
+            <button id="findRecipe">Find Recipe</button>
+        </div>
+        <div id="recipeResult" class="recipe-container hidden">
+            <h2 id="recipeName"></h2>
+            <h3>Ingredients:</h3>
+            <p id="ingredients"></p>
+            <h3>Instructions:</h3>
+            <p id="instructions"></p>
+        </div>
+        <div id="error" class="error hidden"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

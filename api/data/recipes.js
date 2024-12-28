@@ -348,13 +348,7 @@ export const recipes = [
     }
 ];
 
-// 添加验证
-if (!recipes || recipes.length === 0) {
-    throw new Error('Recipes array is empty or undefined');
+// 验证数据
+if (!recipes || !Array.isArray(recipes) || recipes.length === 0) {
+    throw new Error('Invalid recipes data');
 }
-
-recipes.forEach((recipe, index) => {
-    if (!recipe.mood || !recipe.time || !recipe.name || !recipe.ingredients || !recipe.instructions) {
-        throw new Error(`Invalid recipe data at index ${index}`);
-    }
-});

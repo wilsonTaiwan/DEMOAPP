@@ -14,11 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log(`Fetching recipe for mood: ${mood}, time: ${time}`);
             
-            const response = await fetch(`/api/recipe/${encodeURIComponent(mood)}/${encodeURIComponent(time)}`);
+            const response = await fetch(`/api/recipe/${encodeURIComponent(mood)}/${encodeURIComponent(time)}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.error || `Failed to fetch recipe (${response.status})`);
+                throw new Error(typeof data.error === 'string' ? data.error : 'Failed to fetch recipe');
+            }
+            
+            if (!data || !data.name) {
+                throw new Error('Invalid recipe data received');
             }
             
             document.getElementById('recipeName').textContent = data.name;
@@ -29,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } catch (error) {
             console.error('Error:', error);
-            errorDiv.textContent = error.message;
+            errorDiv.textContent = error.message || 'An error occurred while fetching the recipe';
             errorDiv.classList.remove('hidden');
         } finally {
             findRecipeButton.disabled = false;

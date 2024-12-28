@@ -1,5 +1,4 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
@@ -9,404 +8,406 @@ const PORT = process.env.PORT || 3002;
 app.use(express.static('public'));
 app.use(express.json());
 
-// Database connection
-const dbPath = './database/recipes_new.db';
+// 初始化空数组
+const recipes = [];
 
-// 确保数据库目录存在
-const fs = require('fs');
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-}
+// 添加所有食谱数据
+const initializeRecipes = () => {
+    recipes.push(
+        // Happy Recipes
+        {
+            name: 'Morning Sunshine Smoothie Bowl',
+            mood: 'happy',
+            time: 'breakfast',
+            ingredients: 'Mango, banana, orange juice, greek yogurt, granola, honey, chia seeds',
+            instructions: 'Blend fruits with yogurt until smooth, top with granola, drizzle with honey, and sprinkle chia seeds.'
+        },
+        {
+            name: 'Happy Brunch Pancakes',
+            mood: 'happy',
+            time: 'brunch',
+            ingredients: 'Buttermilk, eggs, flour, vanilla, maple syrup, fresh berries, whipped cream',
+            instructions: 'Make fluffy pancakes, stack them high, top with fresh berries and a cloud of whipped cream.'
+        },
+        {
+            name: 'Colorful Buddha Bowl',
+            mood: 'happy',
+            time: 'lunch',
+            ingredients: 'Quinoa, roasted chickpeas, avocado, rainbow vegetables, tahini dressing',
+            instructions: 'Arrange colorful ingredients in a bowl, drizzle with creamy tahini dressing.'
+        },
+        {
+            name: 'Happy Hour Tapas',
+            mood: 'happy',
+            time: 'afternoon',
+            ingredients: 'Spanish olives, manchego cheese, crusty bread, tomato spread, jamón',
+            instructions: 'Arrange a colorful spread of Mediterranean favorites for a cheerful afternoon snack.'
+        },
+        {
+            name: 'Festive Taco Bar',
+            mood: 'happy',
+            time: 'dinner',
+            ingredients: 'Corn tortillas, grilled fish, shrimp, avocado, mango salsa, lime crema',
+            instructions: 'Set up a DIY taco bar with all the colorful toppings and let everyone create their own combinations.'
+        },
+        {
+            name: 'Party Popcorn Mix',
+            mood: 'happy',
+            time: 'latenight',
+            ingredients: 'Popcorn, M&Ms, pretzels, peanuts, white chocolate drizzle',
+            instructions: 'Mix sweet and salty ingredients, drizzle with melted chocolate, and enjoy while watching a fun movie.'
+        },
+        {
+            name: 'Rainbow Fruit Kebabs',
+            mood: 'happy',
+            time: 'snack',
+            ingredients: 'Strawberries, oranges, pineapple, kiwi, blueberries, grapes, honey yogurt dip',
+            instructions: 'Thread colorful fruits onto skewers in rainbow order, serve with honey yogurt dip.'
+        },
+        {
+            name: 'Birthday Cake Sundae',
+            mood: 'happy',
+            time: 'dessert',
+            ingredients: 'Vanilla ice cream, sprinkles, cake pieces, whipped cream, cherry, hot fudge',
+            instructions: 'Layer ice cream with cake pieces, top with all the festive garnishes.'
+        },
 
-// 在文件顶部，数据库连接之前添加这些常量
-const createTableSQL = `
-    CREATE TABLE IF NOT EXISTS recipes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        mood TEXT NOT NULL,
-        time TEXT NOT NULL,
-        ingredients TEXT NOT NULL,
-        instructions TEXT NOT NULL
-    )
-`;
+        // Melancholic Recipes
+        {
+            name: 'Dark Chocolate Oatmeal',
+            mood: 'melancholic',
+            time: 'breakfast',
+            ingredients: 'Steel-cut oats, dark chocolate, sea salt, almond milk, coffee, maple syrup',
+            instructions: 'Cook oats in coffee-infused milk, top with melted dark chocolate and sea salt.'
+        },
+        {
+            name: 'Rainy Day French Toast',
+            mood: 'melancholic',
+            time: 'brunch',
+            ingredients: 'Brioche, eggs, heavy cream, vanilla, cinnamon, maple syrup, butter',
+            instructions: 'Dip thick brioche slices in rich custard, cook until golden, serve with warm maple syrup.'
+        },
+        {
+            name: 'Comfort Mac and Cheese',
+            mood: 'melancholic',
+            time: 'lunch',
+            ingredients: 'Aged cheddar, gruyere, pasta, breadcrumbs, truffle oil, chives',
+            instructions: 'Bake until golden and bubbly, finish with a drizzle of truffle oil.'
+        },
+        {
+            name: 'Earl Grey Tea Scones',
+            mood: 'melancholic',
+            time: 'afternoon',
+            ingredients: 'Earl grey tea, cream, flour, butter, lavender honey, clotted cream',
+            instructions: 'Bake tender scones infused with tea, serve with honey and cream.'
+        },
+        {
+            name: 'Braised Short Ribs',
+            mood: 'melancholic',
+            time: 'dinner',
+            ingredients: 'Beef short ribs, red wine, root vegetables, herbs, mashed potatoes',
+            instructions: 'Slow cook until tender, serve over creamy mashed potatoes.'
+        },
+        {
+            name: 'Midnight Comfort Ramen',
+            mood: 'melancholic',
+            time: 'latenight',
+            ingredients: 'Ramen noodles, miso broth, soft-boiled egg, nori, green onions, corn',
+            instructions: 'Prepare rich miso broth, cook noodles until tender, top with traditional garnishes.'
+        },
+        {
+            name: 'Dark Chocolate Sea Salt Cookies',
+            mood: 'melancholic',
+            time: 'snack',
+            ingredients: 'Dark chocolate, butter, flour, sea salt, vanilla, espresso powder',
+            instructions: 'Bake until edges are set but centers remain soft, sprinkle with sea salt.'
+        },
+        {
+            name: 'Dark Chocolate Lava Cake',
+            mood: 'melancholic',
+            time: 'dessert',
+            ingredients: 'Dark chocolate, butter, eggs, sugar, vanilla extract, flour, sea salt',
+            instructions: 'Bake until edges are set but center remains molten. Serve with a dusting of powdered sugar.'
+        },
 
-const recipesSQL = `
-    INSERT INTO recipes (name, mood, time, ingredients, instructions) VALUES
-    /* Happy Recipes */
-    ('Morning Sunshine Smoothie Bowl', 'happy', 'breakfast',
-    'Mango, banana, orange juice, greek yogurt, granola, honey, chia seeds',
-    'Blend fruits with yogurt until smooth, top with granola, drizzle with honey, and sprinkle chia seeds.'),
-    
-    ('Happy Brunch Pancakes', 'happy', 'brunch',
-    'Buttermilk, eggs, flour, vanilla, maple syrup, fresh berries, whipped cream',
-    'Make fluffy pancakes, stack them high, top with fresh berries and a cloud of whipped cream.'),
-    
-    ('Colorful Buddha Bowl', 'happy', 'lunch',
-    'Quinoa, roasted chickpeas, avocado, rainbow vegetables, tahini dressing',
-    'Arrange colorful ingredients in a bowl, drizzle with creamy tahini dressing.'),
-    
-    ('Happy Hour Tapas', 'happy', 'afternoon',
-    'Spanish olives, manchego cheese, crusty bread, tomato spread, jamón',
-    'Arrange a colorful spread of Mediterranean favorites for a cheerful afternoon snack.'),
-    
-    ('Festive Taco Bar', 'happy', 'dinner',
-    'Corn tortillas, grilled fish, shrimp, avocado, mango salsa, lime crema',
-    'Set up a DIY taco bar with all the colorful toppings and let everyone create their own combinations.'),
-    
-    ('Party Popcorn Mix', 'happy', 'latenight',
-    'Popcorn, M&Ms, pretzels, peanuts, white chocolate drizzle',
-    'Mix sweet and salty ingredients, drizzle with melted chocolate, and enjoy while watching a fun movie.'),
-    
-    ('Rainbow Fruit Kebabs', 'happy', 'snack',
-    'Strawberries, oranges, pineapple, kiwi, blueberries, grapes, honey yogurt dip',
-    'Thread colorful fruits onto skewers in rainbow order, serve with honey yogurt dip.'),
-    
-    ('Birthday Cake Sundae', 'happy', 'dessert',
-    'Vanilla ice cream, sprinkles, cake pieces, whipped cream, cherry, hot fudge',
-    'Layer ice cream with cake pieces, top with all the festive garnishes.'),
+        // Energetic Recipes
+        {
+            name: 'Power Protein Smoothie',
+            mood: 'energetic',
+            time: 'breakfast',
+            ingredients: 'Protein powder, banana, spinach, almond butter, chia seeds, almond milk',
+            instructions: 'Blend all ingredients until smooth, top with extra chia seeds.'
+        },
+        {
+            name: 'Energetic Acai Bowl',
+            mood: 'energetic',
+            time: 'brunch',
+            ingredients: 'Acai powder, mixed berries, banana, granola, coconut, goji berries',
+            instructions: 'Blend acai base until smooth, top with crunchy and energizing toppings.'
+        },
+        {
+            name: 'Quinoa Power Bowl',
+            mood: 'energetic',
+            time: 'lunch',
+            ingredients: 'Quinoa, grilled chicken, kale, sweet potato, avocado, seeds',
+            instructions: 'Arrange protein-rich ingredients in a bowl, dress with lemon vinaigrette.'
+        },
+        {
+            name: 'Energy Bite Platter',
+            mood: 'energetic',
+            time: 'afternoon',
+            ingredients: 'Dates, nuts, protein powder, coconut, dark chocolate chips',
+            instructions: 'Roll into bite-sized balls, perfect for an afternoon energy boost.'
+        },
+        {
+            name: 'Grilled Salmon Bowl',
+            mood: 'energetic',
+            time: 'dinner',
+            ingredients: 'Wild salmon, brown rice, roasted vegetables, ginger, sesame seeds',
+            instructions: 'Grill salmon to perfection, serve over rice with Asian-inspired sauce.'
+        },
+        {
+            name: 'Protein Energy Bars',
+            mood: 'energetic',
+            time: 'latenight',
+            ingredients: 'Oats, protein powder, honey, nuts, dried fruit, dark chocolate',
+            instructions: 'Mix ingredients, press into pan, chill until firm.'
+        },
+        {
+            name: 'Trail Mix',
+            mood: 'energetic',
+            time: 'snack',
+            ingredients: 'Mixed nuts, dried fruits, dark chocolate chips, coconut chips',
+            instructions: 'Mix all ingredients for a perfect energy-boosting snack.'
+        },
+        {
+            name: 'Berry Protein Parfait',
+            mood: 'energetic',
+            time: 'dessert',
+            ingredients: 'Greek yogurt, mixed berries, granola, honey, mint',
+            instructions: 'Layer ingredients in a glass, top with fresh mint.'
+        },
 
-    /* Melancholic Recipes */
-    ('Dark Chocolate Oatmeal', 'melancholic', 'breakfast',
-    'Steel-cut oats, dark chocolate, sea salt, almond milk, coffee, maple syrup',
-    'Cook oats in coffee-infused milk, top with melted dark chocolate and sea salt.'),
-    
-    ('Rainy Day French Toast', 'melancholic', 'brunch',
-    'Brioche, eggs, heavy cream, vanilla, cinnamon, maple syrup, butter',
-    'Dip thick brioche slices in rich custard, cook until golden, serve with warm maple syrup.'),
-    
-    ('Comfort Mac and Cheese', 'melancholic', 'lunch',
-    'Aged cheddar, gruyere, pasta, breadcrumbs, truffle oil, chives',
-    'Bake until golden and bubbly, finish with a drizzle of truffle oil.'),
-    
-    ('Earl Grey Tea Scones', 'melancholic', 'afternoon',
-    'Earl grey tea, cream, flour, butter, lavender honey, clotted cream',
-    'Bake tender scones infused with tea, serve with honey and cream.'),
-    
-    ('Braised Short Ribs', 'melancholic', 'dinner',
-    'Beef short ribs, red wine, root vegetables, herbs, mashed potatoes',
-    'Slow cook until tender, serve over creamy mashed potatoes.'),
-    
-    ('Midnight Comfort Ramen', 'melancholic', 'latenight',
-    'Ramen noodles, miso broth, soft-boiled egg, nori, green onions, corn',
-    'Prepare rich miso broth, cook noodles until tender, top with traditional garnishes.'),
-    
-    ('Dark Chocolate Sea Salt Cookies', 'melancholic', 'snack',
-    'Dark chocolate, butter, flour, sea salt, vanilla, espresso powder',
-    'Bake until edges are set but centers remain soft, sprinkle with sea salt.'),
-    
-    ('Dark Chocolate Lava Cake', 'melancholic', 'dessert',
-    'Dark chocolate, butter, eggs, sugar, vanilla extract, flour, sea salt',
-    'Bake until edges are set but center remains molten. Serve with a dusting of powdered sugar.'),
+        // Anxious Recipes
+        {
+            name: 'Calming Chamomile Oatmeal',
+            mood: 'anxious',
+            time: 'breakfast',
+            ingredients: 'Oats, chamomile tea, honey, banana, cinnamon, almonds',
+            instructions: 'Cook oats in chamomile tea, top with calming ingredients.'
+        },
+        {
+            name: 'Avocado Toast',
+            mood: 'anxious',
+            time: 'brunch',
+            ingredients: 'Sourdough bread, avocado, eggs, microgreens, seeds, lemon',
+            instructions: 'Mash avocado with lemon, top with soft-boiled egg and seeds.'
+        },
+        {
+            name: 'Grounding Root Vegetable Soup',
+            mood: 'anxious',
+            time: 'lunch',
+            ingredients: 'Root vegetables, ginger, turmeric, coconut milk, herbs',
+            instructions: 'Simmer until vegetables are tender, blend until smooth.'
+        },
+        {
+            name: 'Lavender Shortbread',
+            mood: 'anxious',
+            time: 'afternoon',
+            ingredients: 'Butter, flour, lavender, sugar, vanilla, salt',
+            instructions: 'Bake delicate cookies infused with calming lavender.'
+        },
+        {
+            name: 'Comfort Risotto',
+            mood: 'anxious',
+            time: 'dinner',
+            ingredients: 'Arborio rice, mushrooms, parmesan, white wine, butter, thyme',
+            instructions: 'Stir slowly until creamy, fold in mushrooms and cheese.'
+        },
+        {
+            name: 'Calming Tea Latte',
+            mood: 'anxious',
+            time: 'latenight',
+            ingredients: 'Chamomile tea, warm milk, honey, cinnamon, nutmeg',
+            instructions: 'Steep tea in warm spiced milk, sweeten with honey.'
+        },
+        {
+            name: 'Spiced Nuts',
+            mood: 'anxious',
+            time: 'snack',
+            ingredients: 'Mixed nuts, rosemary, sea salt, olive oil, honey',
+            instructions: 'Roast with herbs until fragrant and golden.'
+        },
+        {
+            name: 'Warm Apple Crisp',
+            mood: 'anxious',
+            time: 'dessert',
+            ingredients: 'Apples, oats, cinnamon, butter, brown sugar, vanilla ice cream',
+            instructions: 'Bake until bubbly and golden, serve warm with ice cream.'
+        },
 
-    /* Energetic Recipes */
-    ('Power Protein Smoothie', 'energetic', 'breakfast',
-    'Protein powder, banana, spinach, almond butter, chia seeds, almond milk',
-    'Blend all ingredients until smooth, top with extra chia seeds.'),
-    
-    ('Energetic Acai Bowl', 'energetic', 'brunch',
-    'Acai powder, mixed berries, banana, granola, coconut, goji berries',
-    'Blend acai base until smooth, top with crunchy and energizing toppings.'),
-    
-    ('Quinoa Power Bowl', 'energetic', 'lunch',
-    'Quinoa, grilled chicken, kale, sweet potato, avocado, seeds',
-    'Arrange protein-rich ingredients in a bowl, dress with lemon vinaigrette.'),
-    
-    ('Energy Bite Platter', 'energetic', 'afternoon',
-    'Dates, nuts, protein powder, coconut, dark chocolate chips',
-    'Roll into bite-sized balls, perfect for an afternoon energy boost.'),
-    
-    ('Grilled Salmon Bowl', 'energetic', 'dinner',
-    'Wild salmon, brown rice, roasted vegetables, ginger, sesame seeds',
-    'Grill salmon to perfection, serve over rice with Asian-inspired sauce.'),
-    
-    ('Protein Energy Bars', 'energetic', 'latenight',
-    'Oats, protein powder, honey, nuts, dried fruit, dark chocolate',
-    'Mix ingredients, press into pan, chill until firm.'),
-    
-    ('Trail Mix', 'energetic', 'snack',
-    'Mixed nuts, dried fruits, dark chocolate chips, coconut chips',
-    'Mix all ingredients for a perfect energy-boosting snack.'),
-    
-    ('Berry Protein Parfait', 'energetic', 'dessert',
-    'Greek yogurt, mixed berries, granola, honey, mint',
-    'Layer ingredients in a glass, top with fresh mint.'),
+        // Romantic Recipes
+        {
+            name: 'Rose Petal Pancakes',
+            mood: 'romantic',
+            time: 'breakfast',
+            ingredients: 'Pancake batter, rose water, edible rose petals, honey, berries',
+            instructions: 'Make delicate pancakes, garnish with rose petals and berries.'
+        },
+        {
+            name: 'Champagne Brunch',
+            mood: 'romantic',
+            time: 'brunch',
+            ingredients: 'Champagne, orange juice, smoked salmon, cream cheese, capers',
+            instructions: 'Arrange an elegant brunch spread with bubbles and delicate bites.'
+        },
+        {
+            name: 'Heart-Shaped Ravioli',
+            mood: 'romantic',
+            time: 'lunch',
+            ingredients: 'Pasta dough, ricotta, spinach, nutmeg, truffle oil',
+            instructions: 'Shape pasta into hearts, fill with creamy ricotta mixture.'
+        },
+        {
+            name: 'Chocolate Covered Strawberries',
+            mood: 'romantic',
+            time: 'afternoon',
+            ingredients: 'Fresh strawberries, dark chocolate, white chocolate, gold dust',
+            instructions: 'Dip strawberries in tempered chocolate, decorate with gold.'
+        },
+        {
+            name: 'Romantic Pasta',
+            mood: 'romantic',
+            time: 'dinner',
+            ingredients: 'Homemade pasta, truffle oil, wild mushrooms, cream, parmesan',
+            instructions: 'Toss fresh pasta in luxurious sauce, finish with shaved truffle.'
+        },
+        {
+            name: 'Midnight Chocolate Fondue',
+            mood: 'romantic',
+            time: 'latenight',
+            ingredients: 'Dark chocolate, cream, fruit, cake pieces, berries',
+            instructions: 'Melt chocolate with cream, serve with dippers.'
+        },
+        {
+            name: 'Love Letter Cookies',
+            mood: 'romantic',
+            time: 'snack',
+            ingredients: 'Sugar cookies, royal icing, edible flowers, gold leaf',
+            instructions: 'Decorate cookies with romantic messages and flowers.'
+        },
+        {
+            name: 'Dreamy Soufflé',
+            mood: 'romantic',
+            time: 'dessert',
+            ingredients: 'Dark chocolate, eggs, sugar, butter, vanilla bean, berries',
+            instructions: 'Bake until perfectly risen, serve immediately with berries.'
+        },
 
-    /* Anxious Recipes */
-    ('Calming Chamomile Oatmeal', 'anxious', 'breakfast',
-    'Oats, chamomile tea, honey, banana, cinnamon, almonds',
-    'Cook oats in chamomile tea, top with calming ingredients.'),
-    
-    ('Avocado Toast', 'anxious', 'brunch',
-    'Sourdough bread, avocado, eggs, microgreens, seeds, lemon',
-    'Mash avocado with lemon, top with soft-boiled egg and seeds.'),
-    
-    ('Grounding Root Vegetable Soup', 'anxious', 'lunch',
-    'Root vegetables, ginger, turmeric, coconut milk, herbs',
-    'Simmer until vegetables are tender, blend until smooth.'),
-    
-    ('Lavender Shortbread', 'anxious', 'afternoon',
-    'Butter, flour, lavender, sugar, vanilla, salt',
-    'Bake delicate cookies infused with calming lavender.'),
-    
-    ('Comfort Risotto', 'anxious', 'dinner',
-    'Arborio rice, mushrooms, parmesan, white wine, butter, thyme',
-    'Stir slowly until creamy, fold in mushrooms and cheese.'),
-    
-    ('Calming Tea Latte', 'anxious', 'latenight',
-    'Chamomile tea, warm milk, honey, cinnamon, nutmeg',
-    'Steep tea in warm spiced milk, sweeten with honey.'),
-    
-    ('Spiced Nuts', 'anxious', 'snack',
-    'Mixed nuts, rosemary, sea salt, olive oil, honey',
-    'Roast with herbs until fragrant and golden.'),
-    
-    ('Warm Apple Crisp', 'anxious', 'dessert',
-    'Apples, oats, cinnamon, butter, brown sugar, vanilla ice cream',
-    'Bake until bubbly and golden, serve warm with ice cream.'),
+        // Contemplative Recipes
+        {
+            name: 'Zen Garden Smoothie Bowl',
+            mood: 'contemplative',
+            time: 'breakfast',
+            ingredients: 'Dragon fruit, coconut milk, banana, matcha, black sesame seeds',
+            instructions: 'Create a peaceful pattern with toppings on smooth base.'
+        },
+        {
+            name: 'Mindful Meditation Bowl',
+            mood: 'contemplative',
+            time: 'brunch',
+            ingredients: 'Brown rice, soft-boiled egg, seaweed, pickled vegetables',
+            instructions: 'Arrange ingredients mindfully, eat with full attention.'
+        },
+        {
+            name: 'Forest Mushroom Soup',
+            mood: 'contemplative',
+            time: 'lunch',
+            ingredients: 'Wild mushrooms, thyme, cream, truffle oil, sourdough',
+            instructions: 'Simmer slowly, serve with crusty bread for dipping.'
+        },
+        {
+            name: 'Japanese Tea Ceremony',
+            mood: 'contemplative',
+            time: 'afternoon',
+            ingredients: 'Matcha green tea, wagashi sweets, seasonal garnish',
+            instructions: 'Prepare tea with focused attention and seasonal awareness.'
+        },
+        {
+            name: 'Seasonal Grain Bowl',
+            mood: 'contemplative',
+            time: 'dinner',
+            ingredients: 'Ancient grains, roasted vegetables, miso dressing, microgreens',
+            instructions: 'Compose bowl thoughtfully with seasonal ingredients.'
+        },
+        {
+            name: 'Moonlight Meditation Tea',
+            mood: 'contemplative',
+            time: 'latenight',
+            ingredients: 'White tea, jasmine, honey, lemon, mint',
+            instructions: 'Steep tea gently, sip slowly under moonlight.'
+        },
+        {
+            name: 'Rice Paper Rolls',
+            mood: 'contemplative',
+            time: 'snack',
+            ingredients: 'Rice paper, vegetables, herbs, tofu, peanut sauce',
+            instructions: 'Roll mindfully, arrange in a peaceful pattern.'
+        },
+        {
+            name: 'Matcha Green Tea Cake',
+            mood: 'contemplative',
+            time: 'dessert',
+            ingredients: 'Matcha powder, white chocolate, cream, pistachios',
+            instructions: 'Create subtle layers of green tea flavor.'
+        }
 
-    /* Romantic Recipes */
-    ('Rose Petal Pancakes', 'romantic', 'breakfast',
-    'Pancake batter, rose water, edible rose petals, honey, berries',
-    'Make delicate pancakes, garnish with rose petals and berries.'),
-    
-    ('Champagne Brunch', 'romantic', 'brunch',
-    'Champagne, orange juice, smoked salmon, cream cheese, capers',
-    'Arrange an elegant brunch spread with bubbles and delicate bites.'),
-    
-    ('Heart-Shaped Ravioli', 'romantic', 'lunch',
-    'Pasta dough, ricotta, spinach, nutmeg, truffle oil',
-    'Shape pasta into hearts, fill with creamy ricotta mixture.'),
-    
-    ('Chocolate Covered Strawberries', 'romantic', 'afternoon',
-    'Fresh strawberries, dark chocolate, white chocolate, gold dust',
-    'Dip strawberries in tempered chocolate, decorate with gold.'),
-    
-    ('Romantic Pasta', 'romantic', 'dinner',
-    'Homemade pasta, truffle oil, wild mushrooms, cream, parmesan',
-    'Toss fresh pasta in luxurious sauce, finish with shaved truffle.'),
-    
-    ('Midnight Chocolate Fondue', 'romantic', 'latenight',
-    'Dark chocolate, cream, fruit, cake pieces, berries',
-    'Melt chocolate with cream, serve with dippers.'),
-    
-    ('Love Letter Cookies', 'romantic', 'snack',
-    'Sugar cookies, royal icing, edible flowers, gold leaf',
-    'Decorate cookies with romantic messages and flowers.'),
-    
-    ('Dreamy Soufflé', 'romantic', 'dessert',
-    'Dark chocolate, eggs, sugar, butter, vanilla bean, berries',
-    'Bake until perfectly risen, serve immediately with berries.'),
+        // ... [继续添加 anxious, romantic, contemplative 的食谱] ...
+    );
 
-    /* Contemplative Recipes */
-    ('Zen Garden Smoothie Bowl', 'contemplative', 'breakfast',
-    'Dragon fruit, coconut milk, banana, matcha, black sesame seeds',
-    'Create a peaceful pattern with toppings on smooth base.'),
-    
-    ('Mindful Meditation Bowl', 'contemplative', 'brunch',
-    'Brown rice, soft-boiled egg, seaweed, pickled vegetables',
-    'Arrange ingredients mindfully, eat with full attention.'),
-    
-    ('Forest Mushroom Soup', 'contemplative', 'lunch',
-    'Wild mushrooms, thyme, cream, truffle oil, sourdough',
-    'Simmer slowly, serve with crusty bread for dipping.'),
-    
-    ('Japanese Tea Ceremony', 'contemplative', 'afternoon',
-    'Matcha green tea, wagashi sweets, seasonal garnish',
-    'Prepare tea with focused attention and seasonal awareness.'),
-    
-    ('Seasonal Grain Bowl', 'contemplative', 'dinner',
-    'Ancient grains, roasted vegetables, miso dressing, microgreens',
-    'Compose bowl thoughtfully with seasonal ingredients.'),
-    
-    ('Moonlight Meditation Tea', 'contemplative', 'latenight',
-    'White tea, jasmine, honey, lemon, mint',
-    'Steep tea gently, sip slowly under moonlight.'),
-    
-    ('Rice Paper Rolls', 'contemplative', 'snack',
-    'Rice paper, vegetables, herbs, tofu, peanut sauce',
-    'Roll mindfully, arrange in a peaceful pattern.'),
-    
-    ('Matcha Green Tea Cake', 'contemplative', 'dessert',
-    'Matcha powder, white chocolate, cream, pistachios',
-    'Create subtle layers of green tea flavor.')
-`;
+    // 添加调试日志
+    console.log(`Initialized ${recipes.length} recipes`);
+    console.log('Available combinations:', recipes.map(r => `${r.mood}-${r.time}`));
+};
 
-// 创建数据库连接
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database:', err);
-        process.exit(1);
-    }
-    console.log('Connected to database');
-    // 连接成功后初始化数据库
-    initializeDatabase();
-});
-
-// Get random recipe by mood
-app.get('/api/recipe/:mood/:time', async (req, res) => {
-    const mood = req.params.mood;
-    const time = req.params.time;
+// API endpoint to get a random recipe by mood and time
+app.get('/api/recipe/:mood/:time', (req, res) => {
+    const { mood, time } = req.params;
     
     console.log(`Searching for recipe with mood: ${mood}, time: ${time}`);
 
-    try {
-        // 首先检查数据库连接
-        if (!db) {
-            throw new Error('Database connection not available');
-        }
+    // 首先尝试找到完全匹配的食谱
+    const matchingRecipes = recipes.filter(recipe => 
+        recipe.mood === mood && recipe.time === time
+    );
 
-        // 使用 Promise 包装数据库操作
-        const getRecipe = () => {
-            return new Promise((resolve, reject) => {
-                db.get(
-                    'SELECT * FROM recipes WHERE mood = ? AND time = ? ORDER BY RANDOM() LIMIT 1',
-                    [mood, time],
-                    (err, recipe) => {
-                        if (err) reject(err);
-                        else resolve(recipe);
-                    }
-                );
-            });
-        };
-
-        // 获取食谱
-        const recipe = await getRecipe();
-        
-        if (!recipe) {
-            // 如果没找到特定组合的食谱，返回该心情下的任意食谱
-            const fallbackRecipe = await new Promise((resolve, reject) => {
-                db.get(
-                    'SELECT * FROM recipes WHERE mood = ? ORDER BY RANDOM() LIMIT 1',
-                    [mood],
-                    (err, recipe) => {
-                        if (err) reject(err);
-                        else resolve(recipe);
-                    }
-                );
-            });
-
-            if (fallbackRecipe) {
-                console.log(`Found fallback recipe for mood: ${mood}`);
-                return res.json(fallbackRecipe);
-            }
-        }
-
-        // 如果找到了特定组合的食谱，直接返回
-        if (recipe) {
-            console.log(`Found recipe: ${recipe.name}`);
-            return res.json(recipe);
-        }
-
-        // 如果连 fallback 都没找到，返回 404
-        res.status(404).json({
-            error: 'No recipe found for this combination',
-            mood: mood,
-            time: time
-        });
-
-    } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({
-            error: 'Internal server error',
-            details: error.message
-        });
+    if (matchingRecipes.length > 0) {
+        // 随机返回一个匹配的食谱
+        const randomIndex = Math.floor(Math.random() * matchingRecipes.length);
+        return res.json(matchingRecipes[randomIndex]);
     }
+
+    // 如果没有完全匹配的，尝试找到同样心情的食谱
+    const moodRecipes = recipes.filter(recipe => recipe.mood === mood);
+    
+    if (moodRecipes.length > 0) {
+        // 随机返回一个相同心情的食谱
+        const randomIndex = Math.floor(Math.random() * moodRecipes.length);
+        return res.json(moodRecipes[randomIndex]);
+    }
+
+    // 如果什么都没找到，返回 404
+    res.status(404).json({
+        error: 'No recipe found for this combination',
+        mood,
+        time
+    });
 });
 
-// 将数据库初始化改为异步函数
-async function initializeDatabase() {
-    console.log('Starting database initialization...');
-    
-    try {
-        // 检查表是否存在
-        const table = await new Promise((resolve, reject) => {
-            db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='recipes'", (err, table) => {
-                if (err) reject(err);
-                else resolve(table);
-            });
-        });
+// 初始化食谱数据
+initializeRecipes();
 
-        console.log('Table check result:', table);
-
-        if (!table) {
-            console.log('Creating new recipes table...');
-            await new Promise((resolve, reject) => {
-                db.serialize(() => {
-                    db.run(createTableSQL, (err) => {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-                        console.log('Table created successfully');
-
-                        db.exec(recipesSQL, (err) => {
-                            if (err) reject(err);
-                            else {
-                                console.log('Initial recipes added successfully!');
-                                resolve();
-                            }
-                        });
-                    });
-                });
-            });
-        } else {
-            // 检查现有记录
-            const count = await new Promise((resolve, reject) => {
-                db.get("SELECT COUNT(*) as count FROM recipes", (err, result) => {
-                    if (err) reject(err);
-                    else resolve(result.count);
-                });
-            });
-            console.log('Current recipe count:', count);
-        }
-    } catch (error) {
-        console.error('Database initialization error:', error);
-        process.exit(1);
-    }
-}
-
-// 修改启动服务器的函数
-function startServer() {
-    const server = app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    }).on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
-            console.log(`Port ${PORT} is busy. Please try these solutions:`);
-            console.log('1. Kill all Node processes and try again:');
-            console.log('   Windows: taskkill /F /IM node.exe');
-            console.log('   Mac/Linux: pkill node');
-            console.log(`2. Or set a different port using PORT environment variable:`);
-            console.log('   Windows: set PORT=3001 && npm run dev');
-            console.log('   Mac/Linux: PORT=3001 npm run dev');
-        } else {
-            console.error('Server error:', err);
-        }
-        process.exit(1);
-    });
-
-    // 优雅关闭
-    process.on('SIGTERM', gracefulShutdown);
-    process.on('SIGINT', gracefulShutdown);
-
-    function gracefulShutdown() {
-        console.log('\nStarting graceful shutdown...');
-        server.close(() => {
-            console.log('Server closed');
-            db.close(() => {
-                console.log('Database connection closed');
-                process.exit(0);
-            });
-        });
-
-        // 如果 10 秒内没有完成关闭，强制退出
-        setTimeout(() => {
-            console.error('Could not close connections in time, forcefully shutting down');
-            process.exit(1);
-        }, 10000);
-    }
-}
-
-// 初始化数据库并启动服务器
-initializeDatabase();
-startServer();
+// 启动服务器
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

@@ -12,8 +12,11 @@
   ],
   "routes": [
     {
-      "src": "/api/recipe/(?<mood>[^/]+)/(?<time>[^/]+)",
-      "dest": "/api/recipes?mood=$mood&time=$time"
+      "src": "/api/recipe/([^/]+)/([^/]+)",
+      "dest": "/api/recipe/[mood]/[time]"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",

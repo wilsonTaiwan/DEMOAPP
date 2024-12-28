@@ -361,8 +361,6 @@ const initializeRecipes = () => {
             ingredients: 'Matcha powder, white chocolate, cream, pistachios',
             instructions: 'Create subtle layers of green tea flavor.'
         }
-
-        // ... [继续添加 anxious, romantic, contemplative 的食谱] ...
     );
 
     // 添加调试日志
